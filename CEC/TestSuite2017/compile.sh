@@ -1,0 +1,1 @@
+c++ -O3 -Wall -shared -std=c++11 -fPIC $(python3 -m pybind11 --includes) cec17_test_func.cpp -o cec17_test_func$(python3-config --extension-suffix)
