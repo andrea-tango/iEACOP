@@ -76,7 +76,7 @@ def main():
         label_reps = []
         path_out = outdir + os.sep + "Function%d" % function + os.sep + "%dD" % dimensions
         for rep in range(25):
-            fitness_file = path_out + os.sep + "eacop_fitness_rep%d" % rep
+            fitness_file = path_out + os.sep + "iEACOP_fitness_rep%d" % rep
             with open(fitness_file, "r") as stream:
                 fitness = np.genfromtxt(StringIO(stream.read()), delimiter="\t")
             error_value = fitness[:, 1] - optimum[function]
