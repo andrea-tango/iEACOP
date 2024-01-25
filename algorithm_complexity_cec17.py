@@ -36,7 +36,7 @@ def compute_t_2():
     overall = []
     for i in range(1, 30):
         tic = time()
-        iEACOP.solve(max_fitness_evaluations=10000,
+        ieacop.solve(max_fitness_evaluations=10000,
                      n_individuals=None,
                      fitness_function=run_CEC,
                      fitness_args=i,

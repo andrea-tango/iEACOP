@@ -1,19 +1,14 @@
-import math, os
+import os
 from pathlib import Path
-from copy import deepcopy
 import numpy as np
-import random as rnd
-from scipy.optimize import minimize, OptimizeResult
 from scipy.io import savemat
 from io import StringIO
-
 import multiprocessing as mp
-
 from shutil import make_archive
 
 from CEC.functions import functions as cec_functions
-
 from iEACOP.iEACOP import iEACOP
+
 
 def run_CEC(x, fx_n):
     if fx_n > 1:
@@ -25,14 +20,14 @@ def run(outdir, function, boundaries, dimensions, fiteval, optimization_method):
     path_out = outdir + os.sep + "Function%d" % function + os.sep + "%dD" % dimensions
 
     ieacop = iEACOP(boundaries,
-                   dimensions,
-                   path_out=path_out,
-                   creation_method={"name": "uniform"},
-                   verbose=False)
+                    dimensions,
+                    path_out=path_out,
+                    creation_method={"name": "uniform"},
+                    verbose=False)
 
     for opt in range(25):
         _ = ieacop.solve(fiteval,
-                        n_individuals=None,
+                         n_individuals=None,
                          fitness_function=run_CEC,
                          fitness_args=function,
                          optimization_method=optimization_method,
@@ -98,6 +93,7 @@ def main():
         np.savetxt(txt_file_name, a_reps)
     os.chdir(outdir)
     make_archive("iEACOP_results", "zip", save_dir)
+
 
 if __name__ == "__main__":
     main()
