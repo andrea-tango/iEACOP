@@ -600,7 +600,7 @@ class bEACOP(object):  # evolutionary algorithm for complex-process optimization
 			fo1.write("\n")
 
 
-	def solve(self, max_fitness_evaluations, n_individuals=None, fitness_function=None, fitness_args=None, optimization_method="Powell", coeff=0, seed=None, rep=None):
+	def solve(self, max_fitness_evaluations=10000, n_individuals=None, fitness_function=None, fitness_args=None, optimization_method="Powell", coeff=0, seed=None, rep=None):
 
 		if self.verbose:
 			print(" * Optimization process started ...\n")
