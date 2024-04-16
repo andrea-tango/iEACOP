@@ -36,8 +36,8 @@ def run(outdir, function, boundaries, dimensions, fiteval, optimization_method):
 
 
 def main():
-    outdir = "Results_CEC17"
-    dimensions = 30
+    outdir = "Results_CEC17_apr"
+    dimensions = 100
     evals_per_dimension = 10000  # set the number of function evaluations per dimension
     fitevals = {dimensions: evals_per_dimension * dimensions}
 
@@ -62,16 +62,16 @@ def main():
     # Saving the results as mat files
     sample_size = int(evals_per_dimension / 10)
     sample_resolution = 10 * dimensions
-    algorithm_name = "iEACOP"  # PaperID?
+    algorithm_name = "bEACOP"  # PaperID?
     Path(outdir).mkdir(parents=True, exist_ok=True)
-    save_dir = "iEACOP_results"
+    save_dir = f"{algorithm_name}_results_{dimensions}D"
     Path(f'{outdir}{os.sep}{save_dir}').mkdir(parents=True, exist_ok=True)
     for function in functions:
         a_reps = np.full((sample_size, 25), np.nan)
         label_reps = []
         path_out = outdir + os.sep + "Function%d" % function + os.sep + "%dD" % dimensions
         for rep in range(25):
-            fitness_file = path_out + os.sep + "iEACOP_fitness_rep%d" % rep
+            fitness_file = path_out + os.sep + f"{algorithm_name}_fitness_rep%d" % rep
             with open(fitness_file, "r") as stream:
                 fitness = np.genfromtxt(StringIO(stream.read()), delimiter="\t")
             error_value = fitness[:, 1] - optimum[function]
@@ -92,7 +92,7 @@ def main():
             os.remove(txt_file_name)
         np.savetxt(txt_file_name, a_reps)
     os.chdir(outdir)
-    make_archive("iEACOP_results", "zip", save_dir)
+    make_archive(f"{algorithm_name}_results_{dimensions}D", "zip", save_dir)
 
 
 if __name__ == "__main__":

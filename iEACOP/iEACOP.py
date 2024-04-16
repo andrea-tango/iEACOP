@@ -33,8 +33,8 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		self.best = None  # best
 		self.seed = None
 
-		if id is not None:
-			self.id = id
+		# if id is not None:
+		self.id = id if id is not None else None
 
 		self.init_solutions = []
 		self.solutions = []
@@ -355,39 +355,69 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		improvement = 1
 		lambd = 1.0
 
-		c1 = np.zeros(dim)
-		c2 = np.zeros(dim)
-		values = np.zeros(dim)
+		# c1 = np.zeros(dim)
+		# c2 = np.zeros(dim)
+		# values = np.zeros(dim)
+
+		def sample_points_inside_hypersphere(n_dim, r, c, num, rng):
+			lows = np.zeros(num)
+			highs = np.ones(num)
+			u = rng.uniform(low=lows, high=highs)
+			x = rng.normal(loc=lows, scale=highs, size=(n_dim, num))
+			s = np.sqrt(np.sum(x ** 2, axis=0))
+			x = x / s
+			return x * u ** (1 / n_dim) * r + np.expand_dims(c, axis=1)
 
 		while xch.calculated_fitness < xpr.calculated_fitness:
 
 			ind = Individual()
-			for d in range(dim):
 
-				c1[d] = xch.x[d] - (xpr.x[d] - xch.x[d]) / lambd
-				c2[d] = xch.x[d]
+			c1 = xch.x - (xpr.x - xch.x) / lambd
+			c2 = xch.x
 
-				if c1[d] < self.boundaries[d][0]:
-					c1[d] = self.boundaries[d][0]
+			c12 = np.linalg.norm(c1 - c2, ord=2)
+			radius = c12 / 2
+			unit_vector = (c1 - c2) / c12
+			center = unit_vector * radius + c2
+			n_dim = len(self.boundaries)
+			rng = np.random.default_rng(seed=self.id)
+			xs = sample_points_inside_hypersphere(n_dim, r=radius, c=center, num=1, rng=rng)
+			# samples may lie outside the search space
+			lwb, upb = list(zip(*self.boundaries))
+			xs = np.clip(xs, np.expand_dims(lwb, axis=1), np.expand_dims(upb, axis=1))
+			if xs.ndim == 2:
+				xs = np.squeeze(xs)
 
-				if c1[d] > self.boundaries[d][1]:
-					c1[d] = self.boundaries[d][1]
+			values = xs
+			# print(values.shape, values.dtype, values.ndim)
+			# exit()
 
-				if c1[d] < self.boundaries[d][0]:
-					c2[d] = self.boundaries[d][0]
-
-				if c1[d] > self.boundaries[d][1]:
-					c2[d] = self.boundaries[d][1]
-
-				value = c1[d] + (c2[d] - c1[d]) * rnd.random()
-
-				if value < self.boundaries[d][0]:
-					value = self.boundaries[d][0]
-
-				if value > self.boundaries[d][1]:
-					value = self.boundaries[d][1]
-
-				values[d] = value
+			# for d in range(dim):
+			#
+			# 	c1[d] = xch.x[d] - (xpr.x[d] - xch.x[d]) / lambd
+			# 	c2[d] = xch.x[d]
+			#
+			# 	if c1[d] < self.boundaries[d][0]:
+			# 		c1[d] = self.boundaries[d][0]
+			#
+			# 	if c1[d] > self.boundaries[d][1]:
+			# 		c1[d] = self.boundaries[d][1]
+			#
+			# 	if c2[d] < self.boundaries[d][0]:
+			# 		c2[d] = self.boundaries[d][0]
+			#
+			# 	if c2[d] > self.boundaries[d][1]:
+			# 		c2[d] = self.boundaries[d][1]
+			#
+			# 	value = c1[d] + (c2[d] - c1[d]) * rnd.random()
+			#
+			# 	if value < self.boundaries[d][0]:
+			# 		value = self.boundaries[d][0]
+			#
+			# 	if value > self.boundaries[d][1]:
+			# 		value = self.boundaries[d][1]
+			#
+			# 	values[d] = value
 
 			ind.x = deepcopy(values)
 
