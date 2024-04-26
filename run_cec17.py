@@ -36,9 +36,9 @@ def run(outdir, function, boundaries, dimensions, fiteval, optimization_method):
 
 
 def main():
-    outdir = "Results_CEC17_apr26"
+    outdir = "Results_CEC17_half"
     dimensions = 30
-    evals_per_dimension = 1000  # set the number of function evaluations per dimension
+    evals_per_dimension = 10000  # set the number of function evaluations per dimension
     fitevals = {dimensions: evals_per_dimension * dimensions}
 
     functions = tuple(range(1, 30))

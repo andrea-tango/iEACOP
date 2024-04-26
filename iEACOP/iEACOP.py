@@ -14,7 +14,7 @@ from scipy.special import gamma
 
 class Individual(object):
 
-	
+
 	def __init__(self):
 		self.x = []
 		self.calculated_fitness = sys.float_info.max
@@ -25,11 +25,11 @@ class Individual(object):
 
 class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
-	
+
 	def __repr__(self):
 		return str(self.id)
 
-	
+
 	def __init__(self, boundaries, dimensions=None, path_out=".", write=True, creation_method={'name': "uniform"}, n_change=20, epsilon=1e-3, verbose=False, id=None):
 
 		self.best = None  # best
@@ -74,7 +74,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		self.fitness_file = None
 		self.positions_file = None
 
-	
+
 	def check_boundaries(self, boundaries, dimensions):
 
 		is_nested = all(isinstance(bound, list) for bound in boundaries)
@@ -111,13 +111,13 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 			else:
 				return [boundaries]
 
-	
+
 	def set_fitness(self, fitness, fitness_args):
 
 		self.fitness = fitness
 		self.fitness_args = fitness_args
 
-	
+
 	def update_calculated_fitness(self, kind=0):
 
 		if kind == 0:
@@ -134,7 +134,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 				self.offspring[i].sort(key=lambda x: x.calculated_fitness)
 
-	
+
 	def evaluate_individual(self, x):
 
 		self.fitness_evaluations += 1
@@ -148,7 +148,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		else:
 			return self.fitness(x, self.fitness_args)
 
-	
+
 	def heuristic(self, dim):
 
 		d = 10 * dim
@@ -214,7 +214,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 		return positions
 
-	
+
 	def create_individuals(self, n_individuals, dim, coeff):
 
 		self.solutions = []
@@ -263,7 +263,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 			self.write_results()
 			# print('* wrote created individuals')
 
-	
+
 	def check_diversity(self):
 
 		dim = len(self.boundaries)
@@ -283,7 +283,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 					self.solutions[j] = deepcopy(ind)
 
-	
+
 	def combination_method(self):
 
 		n = len(self.solutions)
@@ -300,12 +300,12 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		for i in range(n):
 			x_new = []
 			for j in range(n):
-				
+
 				if i != j:
 					alpha = -1
 
 					if i < j:
-						alpha = 1						
+						alpha = 1
 
 					beta = float((abs(j - i) - 1)) / float(n - 2)
 
@@ -439,7 +439,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 		return xpr
 
-	
+
 	def update_population(self):
 
 		n = len(self.solutions)
@@ -501,7 +501,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 		return z_local
 
-	
+
 	def check_local_search(self, z):
 
 		if z.calculated_fitness < self.best.calculated_fitness:
@@ -531,7 +531,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 			return False
 
-	
+
 	def evaluate_local_search(self, z, z1):
 
 		evaluation = self.check_local_search(z)
@@ -593,7 +593,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 			if to_add:
 				self.local_solutions.append(z)
 
-	
+
 	def apply_local1(self):
 
 		if self.verbose:
@@ -608,7 +608,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		if self.verbose:
 			print()
 
-	
+
 	def apply_local2(self):
 
 		if self.verbose:
@@ -645,14 +645,14 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		if self.verbose:
 			print()
 
-	
+
 	def iterate(self):
 
 		self.check_diversity()
 		self.combination_method()
 		self.update_population()
 
-		if self.apply_local_search:
+		if self.apply_local_search and self.fitness_evaluations > self.max_fitness_evaluations * .5:
 
 			if self.last_best_local == 0:
 				self.apply_local1()
@@ -693,8 +693,8 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 			return True
 		else:
 			return False
-	
-	
+
+
 	def write_results(self):
 
 		with open(self.fitness_file, "a") as fo:
