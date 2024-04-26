@@ -9,6 +9,8 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.spatial import distance
 from scipy.stats import qmc
+from scipy.special import gamma
+
 
 class Individual(object):
 
@@ -321,10 +323,10 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 						if c1[d] > self.boundaries[d][1]:
 							c1[d] = self.boundaries[d][1]
 
-						if c1[d] < self.boundaries[d][0]:
+						if c2[d] < self.boundaries[d][0]:
 							c2[d] = self.boundaries[d][0]
 
-						if c1[d] > self.boundaries[d][1]:
+						if c2[d] > self.boundaries[d][1]:
 							c2[d] = self.boundaries[d][1]
 
 						value = c1[d] + (c2[d] - c1[d]) * rnd.random()
@@ -376,7 +378,11 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 			c2 = xch.x
 
 			c12 = np.linalg.norm(c1 - c2, ord=2)
-			radius = c12 / 2
+			# first attempt
+			radius = c12 / 2  # maybe multiply by np.sqrt(dim)
+			# second attempt
+			# c12_hyperrectangle_volume = np.prod(np.abs(c2 - c1))  # desired hypersphere volume
+			# radius = (c12_hyperrectangle_volume * gamma(1 + .5 * dim) / np.pi ** (dim / 2.)) ** (1. / dim)
 			unit_vector = (c1 - c2) / c12
 			center = unit_vector * radius + c2
 			n_dim = len(self.boundaries)
@@ -648,7 +654,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 		if self.apply_local_search:
 
-			if self.last_best_local==0:
+			if self.last_best_local == 0:
 				self.apply_local1()
 
 				if len(self.local_solutions) > 1:

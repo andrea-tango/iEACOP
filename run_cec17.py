@@ -36,9 +36,9 @@ def run(outdir, function, boundaries, dimensions, fiteval, optimization_method):
 
 
 def main():
-    outdir = "Results_CEC17_apr"
-    dimensions = 100
-    evals_per_dimension = 10000  # set the number of function evaluations per dimension
+    outdir = "Results_CEC17_apr26"
+    dimensions = 30
+    evals_per_dimension = 1000  # set the number of function evaluations per dimension
     fitevals = {dimensions: evals_per_dimension * dimensions}
 
     functions = tuple(range(1, 30))
@@ -62,7 +62,7 @@ def main():
     # Saving the results as mat files
     sample_size = int(evals_per_dimension / 10)
     sample_resolution = 10 * dimensions
-    algorithm_name = "bEACOP"  # PaperID?
+    algorithm_name = "iEACOP"  # PaperID?
     Path(outdir).mkdir(parents=True, exist_ok=True)
     save_dir = f"{algorithm_name}_results_{dimensions}D"
     Path(f'{outdir}{os.sep}{save_dir}').mkdir(parents=True, exist_ok=True)
