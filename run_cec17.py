@@ -36,7 +36,7 @@ def run(outdir, function, boundaries, dimensions, fiteval, optimization_method):
 
 
 def main():
-    outdir = "Results_CEC17_half"
+    outdir = "Results_CEC17"
     dimensions = 30
     evals_per_dimension = 10000  # set the number of function evaluations per dimension
     fitevals = {dimensions: evals_per_dimension * dimensions}

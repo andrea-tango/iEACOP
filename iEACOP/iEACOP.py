@@ -9,12 +9,10 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.spatial import distance
 from scipy.stats import qmc
-from scipy.special import gamma
-
 
 class Individual(object):
 
-
+	
 	def __init__(self):
 		self.x = []
 		self.calculated_fitness = sys.float_info.max
@@ -25,18 +23,18 @@ class Individual(object):
 
 class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
-
+	
 	def __repr__(self):
 		return str(self.id)
 
-
+	
 	def __init__(self, boundaries, dimensions=None, path_out=".", write=True, creation_method={'name': "uniform"}, n_change=20, epsilon=1e-3, verbose=False, id=None):
 
 		self.best = None  # best
 		self.seed = None
 
-		# if id is not None:
-		self.id = id if id is not None else None
+		if id is not None:
+			self.id = id
 
 		self.init_solutions = []
 		self.solutions = []
@@ -74,7 +72,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		self.fitness_file = None
 		self.positions_file = None
 
-
+	
 	def check_boundaries(self, boundaries, dimensions):
 
 		is_nested = all(isinstance(bound, list) for bound in boundaries)
@@ -111,13 +109,13 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 			else:
 				return [boundaries]
 
-
+	
 	def set_fitness(self, fitness, fitness_args):
 
 		self.fitness = fitness
 		self.fitness_args = fitness_args
 
-
+	
 	def update_calculated_fitness(self, kind=0):
 
 		if kind == 0:
@@ -134,7 +132,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 				self.offspring[i].sort(key=lambda x: x.calculated_fitness)
 
-
+	
 	def evaluate_individual(self, x):
 
 		self.fitness_evaluations += 1
@@ -148,7 +146,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		else:
 			return self.fitness(x, self.fitness_args)
 
-
+	
 	def heuristic(self, dim):
 
 		d = 10 * dim
@@ -214,7 +212,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 		return positions
 
-
+	
 	def create_individuals(self, n_individuals, dim, coeff):
 
 		self.solutions = []
@@ -263,7 +261,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 			self.write_results()
 			# print('* wrote created individuals')
 
-
+	
 	def check_diversity(self):
 
 		dim = len(self.boundaries)
@@ -283,7 +281,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 					self.solutions[j] = deepcopy(ind)
 
-
+	
 	def combination_method(self):
 
 		n = len(self.solutions)
@@ -300,12 +298,12 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		for i in range(n):
 			x_new = []
 			for j in range(n):
-
+				
 				if i != j:
 					alpha = -1
 
 					if i < j:
-						alpha = 1
+						alpha = 1						
 
 					beta = float((abs(j - i) - 1)) / float(n - 2)
 
@@ -357,73 +355,39 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		improvement = 1
 		lambd = 1.0
 
-		# c1 = np.zeros(dim)
-		# c2 = np.zeros(dim)
-		# values = np.zeros(dim)
-
-		def sample_points_inside_hypersphere(n_dim, r, c, num, rng):
-			lows = np.zeros(num)
-			highs = np.ones(num)
-			u = rng.uniform(low=lows, high=highs)
-			x = rng.normal(loc=lows, scale=highs, size=(n_dim, num))
-			s = np.sqrt(np.sum(x ** 2, axis=0))
-			x = x / s
-			return x * u ** (1 / n_dim) * r + np.expand_dims(c, axis=1)
+		c1 = np.zeros(dim)
+		c2 = np.zeros(dim)
+		values = np.zeros(dim)
 
 		while xch.calculated_fitness < xpr.calculated_fitness:
 
 			ind = Individual()
+			for d in range(dim):
 
-			c1 = xch.x - (xpr.x - xch.x) / lambd
-			c2 = xch.x
+				c1[d] = xch.x[d] - (xpr.x[d] - xch.x[d]) / lambd
+				c2[d] = xch.x[d]
 
-			c12 = np.linalg.norm(c1 - c2, ord=2)
-			# first attempt
-			radius = c12 / 2  # maybe multiply by np.sqrt(dim)
-			# second attempt
-			# c12_hyperrectangle_volume = np.prod(np.abs(c2 - c1))  # desired hypersphere volume
-			# radius = (c12_hyperrectangle_volume * gamma(1 + .5 * dim) / np.pi ** (dim / 2.)) ** (1. / dim)
-			unit_vector = (c1 - c2) / c12
-			center = unit_vector * radius + c2
-			n_dim = len(self.boundaries)
-			rng = np.random.default_rng(seed=self.id)
-			xs = sample_points_inside_hypersphere(n_dim, r=radius, c=center, num=1, rng=rng)
-			# samples may lie outside the search space
-			lwb, upb = list(zip(*self.boundaries))
-			xs = np.clip(xs, np.expand_dims(lwb, axis=1), np.expand_dims(upb, axis=1))
-			if xs.ndim == 2:
-				xs = np.squeeze(xs)
+				if c1[d] < self.boundaries[d][0]:
+					c1[d] = self.boundaries[d][0]
 
-			values = xs
-			# print(values.shape, values.dtype, values.ndim)
-			# exit()
+				if c1[d] > self.boundaries[d][1]:
+					c1[d] = self.boundaries[d][1]
 
-			# for d in range(dim):
-			#
-			# 	c1[d] = xch.x[d] - (xpr.x[d] - xch.x[d]) / lambd
-			# 	c2[d] = xch.x[d]
-			#
-			# 	if c1[d] < self.boundaries[d][0]:
-			# 		c1[d] = self.boundaries[d][0]
-			#
-			# 	if c1[d] > self.boundaries[d][1]:
-			# 		c1[d] = self.boundaries[d][1]
-			#
-			# 	if c2[d] < self.boundaries[d][0]:
-			# 		c2[d] = self.boundaries[d][0]
-			#
-			# 	if c2[d] > self.boundaries[d][1]:
-			# 		c2[d] = self.boundaries[d][1]
-			#
-			# 	value = c1[d] + (c2[d] - c1[d]) * rnd.random()
-			#
-			# 	if value < self.boundaries[d][0]:
-			# 		value = self.boundaries[d][0]
-			#
-			# 	if value > self.boundaries[d][1]:
-			# 		value = self.boundaries[d][1]
-			#
-			# 	values[d] = value
+				if c2[d] < self.boundaries[d][0]:
+					c2[d] = self.boundaries[d][0]
+
+				if c2[d] > self.boundaries[d][1]:
+					c2[d] = self.boundaries[d][1]
+
+				value = c1[d] + (c2[d] - c1[d]) * rnd.random()
+
+				if value < self.boundaries[d][0]:
+					value = self.boundaries[d][0]
+
+				if value > self.boundaries[d][1]:
+					value = self.boundaries[d][1]
+
+				values[d] = value
 
 			ind.x = deepcopy(values)
 
@@ -439,7 +403,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 		return xpr
 
-
+	
 	def update_population(self):
 
 		n = len(self.solutions)
@@ -501,7 +465,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 		return z_local
 
-
+	
 	def check_local_search(self, z):
 
 		if z.calculated_fitness < self.best.calculated_fitness:
@@ -531,7 +495,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 
 			return False
 
-
+	
 	def evaluate_local_search(self, z, z1):
 
 		evaluation = self.check_local_search(z)
@@ -593,7 +557,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 			if to_add:
 				self.local_solutions.append(z)
 
-
+	
 	def apply_local1(self):
 
 		if self.verbose:
@@ -608,7 +572,7 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		if self.verbose:
 			print()
 
-
+	
 	def apply_local2(self):
 
 		if self.verbose:
@@ -645,16 +609,16 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 		if self.verbose:
 			print()
 
-
+	
 	def iterate(self):
 
 		self.check_diversity()
 		self.combination_method()
 		self.update_population()
 
-		if self.apply_local_search and self.fitness_evaluations > self.max_fitness_evaluations * .5:
+		if self.apply_local_search:
 
-			if self.last_best_local == 0:
+			if self.last_best_local==0:
 				self.apply_local1()
 
 				if len(self.local_solutions) > 1:
@@ -693,8 +657,8 @@ class iEACOP(object):  # evolutionary algorithm for complex-process optimization
 			return True
 		else:
 			return False
-
-
+	
+	
 	def write_results(self):
 
 		with open(self.fitness_file, "a") as fo:
